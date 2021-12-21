@@ -17,6 +17,8 @@
     "@aws-sdk/client-s3": "^3.42.0",
     "@aws-sdk/util-dynamodb": "^3.42.0",
     "@chainsafe/libp2p-noise": "^4.1.1",
+    "@opentelemetry/exporter-prometheus": "^0.27.0",
+    "@opentelemetry/sdk-metrics-base": "^0.27.0",
     "bl": "^5.0.0",
     "dotenv": "^10.0.0",
     "it-length-prefixed": "^5.0.3",
@@ -31,6 +33,7 @@
     "protobufjs": "^6.11.2"
   },
   "devDependencies": {
+    "@ipld/car": "^3.2.3",
     "@ipld/dag-pb": "^2.1.14",
     "eslint": "^7.32.0",
     "eslint-config-standard": "^16.0.3",

@@ -1,0 +1,29 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "pwa-node",
+      "request": "launch",
+      "name": "Launch Server Program",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}/src/index.js",
+      // "env": {
+
+      // }
+    },
+    {
+      "type": "pwa-node",
+      "request": "launch",
+      "name": "Launch Client Program",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}/playgrounds/bitswap-client.js",
+      "args": ["peer.franciscocardosotest.com", "cids"],
+      // "env": {
+
+      // }
+    }
+  ]
+}

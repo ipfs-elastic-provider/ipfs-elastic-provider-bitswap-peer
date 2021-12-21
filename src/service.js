@@ -127,8 +127,15 @@ async function processWantlist(connection, protocol, wantlist) {
   }
 }
 
-async function startService(currentPort) {
+async function startService(currentPort, meter) {
+// async function startService(currentPort) {
   const peerId = await getPeerId()
+
+  const requestCounter = meter.createCounter('peer_started_counter', {
+    description: 'Just to test if it will show up at metrics'
+  })
+  const labels = { pid: process.pid, environment: 'staging' }
+  requestCounter.add(1, labels)
 
   if (!currentPort) {
     currentPort = port

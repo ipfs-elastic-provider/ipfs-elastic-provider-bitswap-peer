@@ -16,6 +16,8 @@ const {
 
 async function getPeerId() {
   try {
+    console.log(process.env.PEER_ID_FILE)
+    console.log(join(__dirname, '..', peerIdJsonPath))
     const peerIdJson = JSON.parse(await readFile(join(__dirname, '..', peerIdJsonPath), 'utf-8'))
     return await PeerId.createFromJSON(peerIdJson)
   } catch (e) {

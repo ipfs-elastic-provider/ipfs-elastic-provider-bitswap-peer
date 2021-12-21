@@ -33,7 +33,9 @@ async function client() {
   // Connect to the BitSwap peer
   const multiaddr = `/dns4/${process.argv[2]}/tcp/${port}/ws/p2p/${peerId}`
   logger.info(`Connecting to ${multiaddr} ...`)
+  console.log("*** Node dial..")
   const connection = await node.dial(multiaddr)
+  console.log("***** After dial")
   logger.info(`Connected in ${elapsed(start)} ms.`)
 
   const { stream } = await connection.newStream(protocol)
