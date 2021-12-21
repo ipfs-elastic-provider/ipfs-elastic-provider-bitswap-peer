@@ -128,14 +128,18 @@ async function processWantlist(connection, protocol, wantlist) {
 }
 
 async function startService(currentPort, meter) {
-// async function startService(currentPort) {
   const peerId = await getPeerId()
 
-  const requestCounter = meter.createCounter('peer_started_counter', {
+  const peerStartedCounter = meter.createCounter('peer_started_counter', {
     description: 'Just to test if it will show up at metrics'
   })
+
+  const bitswapRequestCounter = meter.createCounter('peer_bitswap_request_counter', {
+    description: 'Increases every time there is a new bitwap request'
+  })
+
   const labels = { pid: process.pid, environment: 'staging' }
-  requestCounter.add(1, labels)
+  peerStartedCounter.add(1, labels)
 
   if (!currentPort) {
     currentPort = port
@@ -157,6 +161,7 @@ async function startService(currentPort, meter) {
     const connection = new Connection(stream)
 
     connection.on('data', data => {
+      bitswapRequestCounter.add(1, labels)
       let message
 
       try {
@@ -166,7 +171,7 @@ async function startService(currentPort, meter) {
         return
       }
 
-      processWantlist(connection, protocol, message.wantlist)
+      // processWantlist(connection, protocol, message.wantlist)
     })
   })
 

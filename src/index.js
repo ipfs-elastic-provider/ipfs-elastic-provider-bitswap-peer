@@ -7,7 +7,7 @@ const { join } = require('path')
 
 const { logger } = require('./logging')
 const { startService } = require('./service')
-const { startMetricsEndpoint } = require('./opentelemetry')
+const { startMetricsEndpoint } = require('./prometheus-exporter')
 const { fetchS3Object } = require('./storage')
 const { start } = require('repl')
 
