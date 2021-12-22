@@ -44,9 +44,9 @@ t.test(`${protocol} - uses the right fields when serializing and deserializing`,
   t.equal(entry.block[2], 0x12)
   t.equal(entry.block[3], 0x20)
 
-  const { client, service, connection } = await prepare(protocol)
+  const { client, service, connection, receiver } = await prepare(protocol)
   await connection.send(request.encode(protocol))
-  const [response] = await receiveMessages(connection, protocol, 5000, 1, true)
+  const [response] = await receiveMessages(receiver, protocol, 5000, 1, true)
   await client.close()
   await service.stop()
 
@@ -66,7 +66,7 @@ t.test(`${protocol} - uses the right fields when serializing and deserializing`,
 t.test(`${protocol} - type=Block - sendDontHave=true - 2 hits / 2 misses - 2 blocks received`, async t => {
   t.plan(4)
 
-  const { client, service, connection } = await prepare(protocol)
+  const { client, service, connection, receiver } = await prepare(protocol)
 
   const wantList = new WantList(
     [
@@ -81,7 +81,7 @@ t.test(`${protocol} - type=Block - sendDontHave=true - 2 hits / 2 misses - 2 blo
   const request = new Message(wantList, [], [], 0)
   await connection.send(request.encode(protocol))
 
-  const [response] = await receiveMessages(connection, protocol)
+  const [response] = await receiveMessages(receiver, protocol)
   await client.close()
   await service.stop()
 
@@ -95,7 +95,7 @@ t.test(`${protocol} - type=Block - sendDontHave=true - 2 hits / 2 misses - 2 blo
 t.test(`${protocol} - type=Block - sendDontHave=false - 2 hits / 2 misses - 2 blocks received`, async t => {
   t.plan(4)
 
-  const { client, service, connection } = await prepare(protocol)
+  const { client, service, connection, receiver } = await prepare(protocol)
 
   const wantList = new WantList(
     [
@@ -110,7 +110,7 @@ t.test(`${protocol} - type=Block - sendDontHave=false - 2 hits / 2 misses - 2 bl
   const request = new Message(wantList, [], [], 0)
   await connection.send(request.encode(protocol))
 
-  const [response] = await receiveMessages(connection, protocol)
+  const [response] = await receiveMessages(receiver, protocol)
   await client.close()
   await service.stop()
 
@@ -124,7 +124,7 @@ t.test(`${protocol} - type=Block - sendDontHave=false - 2 hits / 2 misses - 2 bl
 t.test(`${protocol} - type=Have - sendDontHave=true - 2 hits / 2 misses - 2 blocks received`, async t => {
   t.plan(4)
 
-  const { client, service, connection } = await prepare(protocol)
+  const { client, service, connection, receiver } = await prepare(protocol)
 
   const wantList = new WantList(
     [
@@ -139,7 +139,7 @@ t.test(`${protocol} - type=Have - sendDontHave=true - 2 hits / 2 misses - 2 bloc
   const request = new Message(wantList, [], [], 0)
   await connection.send(request.encode(protocol))
 
-  const [response] = await receiveMessages(connection, protocol)
+  const [response] = await receiveMessages(receiver, protocol)
   await client.close()
   await service.stop()
 
@@ -153,7 +153,7 @@ t.test(`${protocol} - type=Have - sendDontHave=true - 2 hits / 2 misses - 2 bloc
 t.test(`${protocol} - type=Have - sendDontHave=false - 2 hits / 2 misses - 2 blocks received`, async t => {
   t.plan(4)
 
-  const { client, service, connection } = await prepare(protocol)
+  const { client, service, connection, receiver } = await prepare(protocol)
 
   const wantList = new WantList(
     [
@@ -168,7 +168,7 @@ t.test(`${protocol} - type=Have - sendDontHave=false - 2 hits / 2 misses - 2 blo
   const request = new Message(wantList, [], [], 0)
   await connection.send(request.encode(protocol))
 
-  const [response] = await receiveMessages(connection, protocol)
+  const [response] = await receiveMessages(receiver, protocol)
   await client.close()
   await service.stop()
 
@@ -182,7 +182,7 @@ t.test(`${protocol} - type=Have - sendDontHave=false - 2 hits / 2 misses - 2 blo
 t.test(`${protocol} - type=Mixed - sendDontHave=true - 2 blocks received`, async t => {
   t.plan(4)
 
-  const { client, service, connection } = await prepare(protocol)
+  const { client, service, connection, receiver } = await prepare(protocol)
 
   const wantList = new WantList(
     [
@@ -197,7 +197,7 @@ t.test(`${protocol} - type=Mixed - sendDontHave=true - 2 blocks received`, async
   const request = new Message(wantList, [], [], 0)
   await connection.send(request.encode(protocol))
 
-  const [response] = await receiveMessages(connection, protocol)
+  const [response] = await receiveMessages(receiver, protocol)
   await client.close()
   await service.stop()
 
@@ -211,7 +211,7 @@ t.test(`${protocol} - type=Mixed - sendDontHave=true - 2 blocks received`, async
 t.test(`${protocol} - type=Mixed - sendDontHave=false - 2 blocks received`, async t => {
   t.plan(4)
 
-  const { client, service, connection } = await prepare(protocol)
+  const { client, service, connection, receiver } = await prepare(protocol)
 
   const wantList = new WantList(
     [
@@ -226,7 +226,7 @@ t.test(`${protocol} - type=Mixed - sendDontHave=false - 2 blocks received`, asyn
   const request = new Message(wantList, [], [], 0)
   await connection.send(request.encode(protocol))
 
-  const [response] = await receiveMessages(connection, protocol)
+  const [response] = await receiveMessages(receiver, protocol)
   await client.close()
   await service.stop()
 
@@ -240,7 +240,7 @@ t.test(`${protocol} - type=Mixed - sendDontHave=false - 2 blocks received`, asyn
 t.test(`${protocol} - type=Mixed - cancel=true - no response received`, async t => {
   t.plan(1)
 
-  const { client, service, connection } = await prepare(protocol)
+  const { client, service, connection, receiver } = await prepare(protocol)
 
   const wantList = new WantList(
     [
@@ -255,7 +255,7 @@ t.test(`${protocol} - type=Mixed - cancel=true - no response received`, async t 
   const request = new Message(wantList, [], [], 0)
   await connection.send(request.encode(protocol))
 
-  const responses = await receiveMessages(connection, protocol)
+  const responses = await receiveMessages(receiver, protocol)
   await client.close()
   await service.stop()
 
@@ -265,7 +265,7 @@ t.test(`${protocol} - type=Mixed - cancel=true - no response received`, async t 
 t.test(`${protocol} - large blocks skipping`, async t => {
   t.plan(7)
 
-  const { client, service, connection } = await prepare(protocol)
+  const { client, service, connection, receiver } = await prepare(protocol)
 
   const wantList = new WantList(
     [
@@ -281,7 +281,7 @@ t.test(`${protocol} - large blocks skipping`, async t => {
   await connection.send(request.encode(protocol))
   await connection.send(request.encode(protocol))
 
-  const responses = await receiveMessages(connection, protocol, 30000, 2)
+  const responses = await receiveMessages(receiver, protocol, 30000, 2)
   await client.close()
   await service.stop()
 

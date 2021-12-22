@@ -20,6 +20,7 @@ const maxMessageSize = 4 * 1024 * 1024 // 4 MB
 const BITSWAP_V_100 = '/ipfs/bitswap/1.0.0'
 const BITSWAP_V_110 = '/ipfs/bitswap/1.1.0'
 const BITSWAP_V_120 = '/ipfs/bitswap/1.2.0'
+const protocols = [BITSWAP_V_120, BITSWAP_V_110, BITSWAP_V_100]
 
 /*
   Breakdown of the constants below:
@@ -303,6 +304,7 @@ module.exports = {
   maxPriority,
   maxBlockSize,
   maxMessageSize,
+  protocols,
   Block,
   BlockPresence,
   Entry,

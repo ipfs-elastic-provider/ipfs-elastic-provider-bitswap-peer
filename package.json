@@ -41,9 +41,13 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^5.1.1",
     "get-port": "^5.0.0",
+    "ipfs-car": "^0.6.0",
+    "libp2p-gossipsub": "^0.12.1",
+    "libp2p-tcp": "^0.17.2",
     "pino-pretty": "^7.2.0",
     "prettier": "^2.4.1",
-    "tap": "^15.1.5"
+    "tap": "^15.1.5",
+    "undici": "^4.12.0"
   },
   "engines": {
     "node": ">=14.15.0"

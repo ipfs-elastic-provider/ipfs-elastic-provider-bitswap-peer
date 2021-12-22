@@ -25,6 +25,7 @@ jobs:
         run: |
           echo IMAGE_REPOSITORY=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
           echo PACKAGE_VERSION=$(cat package.json | jq -r '.version') >> $GITHUB_ENV
+          echo BUILD_DATE=$(date +%Y%m%d.%H%M) >> $GITHUB_ENV
           npm install
       - name: Lint code
         run: npm run lint
@@ -43,6 +44,7 @@ jobs:
           context: .
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/app:${{ env.PACKAGE_VERSION }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/app:${{ env.BUILD_DATE }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/app:latest
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}

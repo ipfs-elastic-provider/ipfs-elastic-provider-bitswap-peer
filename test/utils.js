@@ -2,6 +2,7 @@
 
 const { NOISE } = require('@chainsafe/libp2p-noise')
 const dagPB = require('@ipld/dag-pb')
+const { EventEmitter } = require('events')
 const libp2p = require('libp2p')
 const Multiplex = require('libp2p-mplex')
 const Websockets = require('libp2p-websockets')
@@ -13,6 +14,7 @@ const { startService } = require('../src/service')
 const { RawMessage, Message } = require('../src/protocol')
 const { Connection } = require('../src/networking')
 
+// TODO: Write a script to regenerate this data
 // cid1 and cid2 exists, the other two don't
 const cid1 = CID.parse('bafkreifiqpnpysanizxoatqnnwuynply5mp52ily2bdjg4r5uoupsxkc6q')
 const cid2 = CID.parse('bafybeigt3wlrvzpanhazlpumeoz2ya4tmkrjhaq6ulvlbw5y4hlfzhidvm')
@@ -41,20 +43,31 @@ async function createClient(peerId, port, protocol) {
 
   const connection = await node.dial(`/ip4/127.0.0.1/tcp/${port}/ws/p2p/${peerId}`)
   const { stream } = await connection.newStream(protocol)
+  const receiver = new EventEmitter()
 
-  return { connection, stream }
+  node.handle(protocol, async ({ connection: dialConnection, stream, protocol }) => {
+    const connection = new Connection(dialConnection, stream)
+
+    connection.on('data', data => {
+      receiver.emit('message', data)
+    })
+  })
+
+  return { connection, stream, receiver }
 }
 
 async function prepare(protocol) {
   const port = await getPort({ port: currentPort++ })
-  const { peerId, service } = await startService(port)
-  const { connection: client, stream } = await createClient(peerId, port, protocol)
-  const connection = new Connection(stream, protocol)
 
-  return { service, client, connection }
+  const { peerId, service } = await startService(port)
+  const { connection: client, stream, receiver } = await createClient(peerId, port, protocol)
+
+  const connection = new Connection(client, stream)
+
+  return { service, client, connection, receiver }
 }
 
-async function receiveMessages(connection, protocol, timeout = 5000, limit = 1, raw = false) {
+async function receiveMessages(receiver, protocol, timeout = 5000, limit = 1, raw = false) {
   let timeoutHandle
   const responses = []
 
@@ -71,13 +84,13 @@ async function receiveMessages(connection, protocol, timeout = 5000, limit = 1, 
     }, timeout)
 
     // Return all the response we receive in a certain timeout
-    connection.on('data', data => {
+    receiver.on('message', message => {
       if (resolved) {
         return
       }
 
       try {
-        responses.push(raw ? RawMessage.decode(data) : Message.decode(data, protocol))
+        responses.push(raw ? RawMessage.decode(message) : Message.decode(message, protocol))
 
         if (responses.length === limit) {
           resolved = true
@@ -90,7 +103,7 @@ async function receiveMessages(connection, protocol, timeout = 5000, limit = 1, 
     })
   }).finally(() => {
     clearTimeout(timeoutHandle)
-    connection.removeAllListeners('data')
+    receiver.removeAllListeners('message')
   })
 }
 

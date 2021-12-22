@@ -9,13 +9,12 @@ const pMap = require('p-map')
 const { cacheBlocksInfo, concurrency, blocksTable, getPeerId, primaryKeys, port } = require('./config')
 const { logger, serializeError } = require('./logging')
 const {
-  BITSWAP_V_100,
-  BITSWAP_V_110,
   BITSWAP_V_120,
   Block,
   BlockPresence,
   Entry,
   Message,
+  protocols,
   emptyWantList,
   maxBlockSize
 } = require('./protocol')
@@ -65,8 +64,17 @@ async function fetchBlock(cid) {
   return fetchS3Object(bucket, key, offset, length)
 }
 
-async function processWantlist(connection, protocol, wantlist) {
+function sendMessage(connection, message, protocol) {
+  connection.send(message.encode(protocol))
+}
+
+async function processWantlist(service, peer, wantlist) {
   let message = createEmptyMessage()
+
+  // TODO: Eventually this might be created only if a response is needed
+  const dialConnection = await service.dial(peer)
+  const { stream, protocol } = await dialConnection.newStream(protocols)
+  const connection = new Connection(dialConnection, stream)
 
   // For each entry in the list
   await pMap(
@@ -108,12 +116,12 @@ async function processWantlist(connection, protocol, wantlist) {
       */
       if (newBlock) {
         if (!message.addBlock(newBlock, protocol)) {
-          connection.send(message.encode(protocol))
+          sendMessage(connection, message, protocol)
           message = createEmptyMessage([newBlock])
         }
       } else if (newPresence) {
         if (!message.addBlockPresence(newPresence, protocol)) {
-          connection.send(message.encode(protocol))
+          sendMessage(connection, message, protocol)
           message = createEmptyMessage([], [newPresence])
         }
       }
@@ -123,8 +131,10 @@ async function processWantlist(connection, protocol, wantlist) {
 
   // Once we have processed all blocks, see if there is anything else to send
   if (message.blocks.length || message.blockPresences.length) {
-    connection.send(message.encode(protocol))
+    sendMessage(connection, message, protocol)
   }
+
+  await connection.close()
 }
 
 async function startService(currentPort, meter) {
@@ -152,9 +162,10 @@ async function startService(currentPort, meter) {
     }
   })
 
-  service.handle([BITSWAP_V_120, BITSWAP_V_110, BITSWAP_V_100], async ({ stream, protocol }) => {
-    const connection = new Connection(stream)
+  service.handle(protocols, async ({ connection: dial, stream, protocol }) => {
+    const connection = new Connection(dial, stream)
 
+    // Open a send connection to the peer
     connection.on('data', data => {
       bitswapRequestCounter.add(1, metricLabels)
       let message
@@ -166,7 +177,11 @@ async function startService(currentPort, meter) {
         return
       }
 
-      // processWantlist(connection, protocol, message.wantlist)
+      // processWantlist(service, dial.remotePeer, message.wantlist)
+    })
+
+    connection.on('error', error => {
+      logger.error({ error }, `Connection error: ${serializeError(error)}`)
     })
   })
 

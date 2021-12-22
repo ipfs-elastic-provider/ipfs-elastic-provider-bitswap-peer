@@ -2,8 +2,11 @@
 
 require('dotenv').config()
 const PeerId = require('peer-id')
-const { readFile } = require('fs/promises')
+const { readFile, writeFile } = require('fs/promises')
 const { join } = require('path')
+
+const { logger } = require('./logging')
+const { fetchS3Object } = require('./storage')
 
 const {
   CACHE_BLOCKS_INFO: cacheBlocksInfo,
@@ -14,7 +17,18 @@ const {
   PORT: rawPort
 } = process.env
 
+async function downloadPeerIdFile() {
+  logger.info(`Downloading PeerId from s3://${process.env.PEER_ID_S3_BUCKET}/${process.env.PEER_ID_FILE}`)
+
+  const contents = await fetchS3Object(process.env.PEER_ID_S3_BUCKET, process.env.PEER_ID_FILE)
+  return writeFile(join(__dirname, '..', process.env.PEER_ID_FILE), contents)
+}
+
 async function getPeerId() {
+  if (process.env.PEER_ID_S3_BUCKET) {
+    await downloadPeerIdFile()
+  }
+
   try {
     console.log(process.env.PEER_ID_FILE)
     console.log(join(__dirname, '..', peerIdJsonPath))

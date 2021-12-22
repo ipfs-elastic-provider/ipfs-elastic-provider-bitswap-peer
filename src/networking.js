@@ -3,13 +3,14 @@
 const { EventEmitter } = require('events')
 const lengthPrefixedMessage = require('it-length-prefixed')
 const pipe = require('it-pipe')
-
+const { setTimeout: sleep } = require('timers/promises')
 const { logger, serializeError } = require('./logging')
 
 class Connection extends EventEmitter {
-  constructor(stream) {
+  constructor(dial, stream) {
     super()
 
+    this.dial = dial
     this.done = false
     this.values = []
     this.resolves = []
@@ -26,12 +27,19 @@ class Connection extends EventEmitter {
     })
 
     // Prepare for sending
-    pipe(this, lengthPrefixedMessage.encode(), stream.sink).catch(error => {
-      this.emit('error', error)
-      this.emit('error:send', error)
+    pipe(this, lengthPrefixedMessage.encode(), stream.sink)
+      // Autoclean up idle connections
+      .then(() => sleep(30000))
+      .then(() =>
+        // Closing
+        this.dial.close().catch(() => {})
+      )
+      .catch(error => {
+        this.emit('error', error)
+        this.emit('error:send', error)
 
-      logger.error({ error }, `Cannot send data: ${serializeError(error)}`)
-    })
+        logger.error({ error }, `Cannot send data: ${serializeError(error)}`)
+      })
   }
 
   send(value) {
@@ -48,7 +56,7 @@ class Connection extends EventEmitter {
     this.values.push(value)
   }
 
-  finish() {
+  close() {
     this.done = true
 
     for (const resolve of this.resolves) {
