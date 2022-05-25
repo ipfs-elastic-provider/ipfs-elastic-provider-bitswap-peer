@@ -94,7 +94,7 @@ class Entry {
     }
 
     return {
-      block: cid.bytes,
+      block: cid.toV1().bytes,
       priority,
       cancel,
       wantType,
