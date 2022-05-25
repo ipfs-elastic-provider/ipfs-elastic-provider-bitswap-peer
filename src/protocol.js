@@ -85,16 +85,16 @@ class Entry {
   serialize(protocol) {
     const { cid, priority, cancel, wantType, sendDontHave } = this
 
-    if (protocol === BITSWAP_V_100 || protocol === BITSWAP_V_110) {
+    if (protocol === BITSWAP_V_100) {
       return {
-        block: (protocol === BITSWAP_V_100 && cid.version === 1 ? CID.createV0(cid.multihash) : cid).bytes,
+        block: (cid.version === 1 ? CID.createV0(cid.multihash) : cid).bytes,
         priority,
         cancel
       }
     }
 
     return {
-      block: cid.toV1().bytes,
+      block: cid.bytes,
       priority,
       cancel,
       wantType,

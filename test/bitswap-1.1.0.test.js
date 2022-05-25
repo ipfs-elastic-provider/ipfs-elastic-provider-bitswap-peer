@@ -33,7 +33,7 @@ t.test(`${protocol} - uses the right fields when serializing and deserializing`,
   const encoded = request.serialize(protocol)
 
   const entry = encoded.wantlist.entries[0]
-  t.strictSame(Object.keys(entry), ['block', 'priority', 'cancel'])
+  t.strictSame(Object.keys(entry), ['block', 'priority', 'cancel', 'wantType', 'sendDontHave'])
   t.equal(entry.block[0], 0x01)
   t.equal(entry.block[1], 0x55)
   t.equal(entry.block[2], 0x12)
