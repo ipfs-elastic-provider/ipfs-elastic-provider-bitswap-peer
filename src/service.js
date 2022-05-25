@@ -13,7 +13,6 @@ const { noiseCrypto } = require('./noise-crypto')
 const { getPeerId } = require('../src/peer-id')
 const { startKeepAlive, stopKeepAlive } = require('./p2p-keep-alive.js')
 const {
-  BITSWAP_V_110,
   BITSWAP_V_120,
   Block,
   BlockPresence,
@@ -110,11 +109,11 @@ async function processEntry(entry, context) {
         telemetry.increaseCount('bitswap-block-hits')
         telemetry.increaseCount('bitswap-sent-data', raw.length)
         newBlock = new Block(entry.cid, raw)
-      } else if (entry.sendDontHave && [BITSWAP_V_120, BITSWAP_V_110].includes(context.protocol)) {
+      } else if (entry.sendDontHave && context.protocol === BITSWAP_V_120) {
         telemetry.increaseCount('bitswap-block-misses')
         newPresence = new BlockPresence(entry.cid, BlockPresence.Type.DontHave)
       }
-    } else if (entry.wantType === Entry.WantType.Have && [BITSWAP_V_120, BITSWAP_V_110].includes(context.protocol)) {
+    } else if (entry.wantType === Entry.WantType.Have && context.protocol === BITSWAP_V_120) {
       // Check if we have the block
       const existing = await getBlockInfo(context.dispatcher, entry.cid)
 
